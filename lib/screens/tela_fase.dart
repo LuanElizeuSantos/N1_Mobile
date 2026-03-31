@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/curriculum_data.dart';
 import '../models/curriculum.dart';
+import '../services/achievement_handler.dart';
 import '../services/progress_service.dart';
 import '../widgets/activity_widgets.dart';
 import '../widgets/curriculum_formatted_text.dart';
@@ -24,19 +25,19 @@ class _TelaFaseState extends State<TelaFase> {
   Future<void> _finishPhase(BuildContext context) async {
     final service = ProgressService.instance;
     final advanced = widget.phaseIndex == service.progress.completedPhases;
+    final levelBefore = service.progress.playerLevel;
 
     await service.completePhaseIfCurrent(widget.phaseIndex);
 
     if (!context.mounted) return;
 
     final after = service.progress;
-    final total = allPhases.length;
 
     if (advanced) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            after.completedPhases >= total
+            after.completedPhases >= 20
                 ? 'Jornada completa! Nível ${after.playerLevel}.'
                 : 'Fase concluída! Nível ${after.playerLevel}.',
           ),
@@ -44,6 +45,20 @@ class _TelaFaseState extends State<TelaFase> {
           behavior: SnackBarBehavior.floating,
         ),
       );
+
+      final achBefore = AchievementHandler.unlockedCountForLevel(levelBefore);
+      final achAfter = AchievementHandler.unlockedCountForLevel(after.playerLevel);
+      if (achAfter > achBefore && AchievementHandler.all.isNotEmpty) {
+        final newest = AchievementHandler.all[achAfter - 1];
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Nova conquista: ${newest.title}'),
+            backgroundColor: Colors.deepPurple,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

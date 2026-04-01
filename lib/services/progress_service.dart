@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../data/curriculum_data.dart';
 import '../models/user_progress.dart';
 
 class ProgressService extends ChangeNotifier {
@@ -54,7 +55,7 @@ class ProgressService extends ChangeNotifier {
 
   Future<void> completePhaseIfCurrent(int phaseIndex) async {
     if (phaseIndex != _progress.completedPhases) return;
-    if (_progress.completedPhases >= 20) return;
+    if (_progress.completedPhases >= allPhases.length) return;
     _progress = _progress.copyWith(completedPhases: _progress.completedPhases + 1);
     await _persist();
   }

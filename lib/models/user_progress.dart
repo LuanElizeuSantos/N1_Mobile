@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import '../data/curriculum_data.dart';
+
 class UserProgress {
   final int completedPhases;
   final String playerName;
@@ -17,14 +19,14 @@ class UserProgress {
   int get playerLevel => 1 + (completedPhases ~/ 2);
 
   int get currentWorld {
-    if (completedPhases >= 20) return 2;
-    return completedPhases < 10 ? 1 : 2;
+    if (allPhases.isEmpty) return 1;
+    if (completedPhases >= allPhases.length) return allPhases.last.world;
+    return allPhases[completedPhases].world;
   }
 
   int? get nextPhaseInWorld {
-    if (completedPhases >= 20) return null;
-    if (completedPhases < 10) return completedPhases + 1;
-    return completedPhases - 10 + 1;
+    if (completedPhases >= allPhases.length) return null;
+    return allPhases[completedPhases].indexInWorld;
   }
 
   UserProgress copyWith({
@@ -47,7 +49,7 @@ class UserProgress {
     int phases = 0;
     if (raw is int) phases = raw;
     if (raw is num) phases = raw.toInt();
-    phases = phases.clamp(0, 20);
+    phases = phases.clamp(0, allPhases.length);
 
     final name = json['playerName'] is String
         ? (json['playerName'] as String).trim()

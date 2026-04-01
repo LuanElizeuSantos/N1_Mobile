@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../data/curriculum_data.dart';
 import '../services/achievement_handler.dart';
 import '../services/progress_service.dart';
 
@@ -12,8 +13,15 @@ class TelaPerfil extends StatelessWidget {
       listenable: ProgressService.instance,
       builder: (context, _) {
         final p = ProgressService.instance.progress;
-        final mundo = p.currentWorld == 1 ? 'Mundo 1 — Dart' : 'Mundo 2 — Flutter';
-        final achievements = AchievementHandler.listForLevel(p.playerLevel);
+        final mundo = switch (p.currentWorld) {
+          1 => 'Mundo 1 — Dart',
+          2 => 'Mundo 2 — Flutter',
+          3 => 'Mundo 3 — Firebase',
+          _ => 'Mundo ${p.currentWorld}',
+        };
+        final achievements =
+            AchievementHandler.listForCompletedPhases(p.completedPhases);
+        final fasesNoMundo = allPhases.where((e) => e.world == p.currentWorld).length;
 
         return Scaffold(
           appBar: AppBar(title: const Text('Crachá do Dev')),
@@ -35,7 +43,7 @@ class TelaPerfil extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
                   child: Text(
-                    'Próxima fase no mundo atual: ${p.nextPhaseInWorld}/10',
+                    'Próxima fase no mundo atual: ${p.nextPhaseInWorld}/$fasesNoMundo',
                     style: TextStyle(color: Colors.blueGrey.shade300, fontSize: 13),
                   ),
                 ),
@@ -95,6 +103,50 @@ class TelaPerfil extends StatelessWidget {
                       ),
                     );
                   },
+                ),
+              ),
+              SafeArea(
+                minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: TextButton.icon(
+                  onPressed: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Zerar progresso?'),
+                        content: const Text(
+                          'Fases e conquistas voltam ao início. O nome do crachá '
+                          'permanece o mesmo.',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('Cancelar'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text(
+                              'Zerar',
+                              style: TextStyle(color: Colors.redAccent),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirm != true || !context.mounted) return;
+                    await ProgressService.instance.resetProgress();
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Progresso zerado.'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.restart_alt, color: Colors.redAccent),
+                  label: const Text(
+                    'Zerar progresso',
+                    style: TextStyle(color: Colors.redAccent),
+                  ),
                 ),
               ),
             ],

@@ -25,7 +25,7 @@ class _TelaFaseState extends State<TelaFase> {
   Future<void> _finishPhase(BuildContext context) async {
     final service = ProgressService.instance;
     final advanced = widget.phaseIndex == service.progress.completedPhases;
-    final levelBefore = service.progress.playerLevel;
+    final phasesBefore = service.progress.completedPhases;
 
     await service.completePhaseIfCurrent(widget.phaseIndex);
 
@@ -37,7 +37,7 @@ class _TelaFaseState extends State<TelaFase> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            after.completedPhases >= 20
+            after.completedPhases >= allPhases.length
                 ? 'Jornada completa! Nível ${after.playerLevel}.'
                 : 'Fase concluída! Nível ${after.playerLevel}.',
           ),
@@ -46,8 +46,10 @@ class _TelaFaseState extends State<TelaFase> {
         ),
       );
 
-      final achBefore = AchievementHandler.unlockedCountForLevel(levelBefore);
-      final achAfter = AchievementHandler.unlockedCountForLevel(after.playerLevel);
+      final achBefore =
+          AchievementHandler.unlockedCountForCompletedPhases(phasesBefore);
+      final achAfter =
+          AchievementHandler.unlockedCountForCompletedPhases(after.completedPhases);
       if (achAfter > achBefore && AchievementHandler.all.isNotEmpty) {
         final newest = AchievementHandler.all[achAfter - 1];
         ScaffoldMessenger.of(context).showSnackBar(

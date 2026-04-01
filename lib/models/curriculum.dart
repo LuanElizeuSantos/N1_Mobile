@@ -52,7 +52,18 @@ class PhaseData {
     this.activities,
   });
 
-  String get worldTitle => world == 1 ? 'Mundo 1 — Dart' : 'Mundo 2 — Flutter';
+  String get worldTitle {
+    switch (world) {
+      case 1:
+        return 'Mundo 1 — Dart';
+      case 2:
+        return 'Mundo 2 — Flutter';
+      case 3:
+        return 'Mundo 3 — Firebase';
+      default:
+        return 'Mundo $world';
+    }
+  }
 }
 
 class AchievementDef {

@@ -9,7 +9,21 @@ import 'tela_perfil.dart';
 class TelaHome extends StatelessWidget {
   const TelaHome({super.key});
 
-  static String _worldLabel(int w) => w == 1 ? 'Dart' : 'Flutter';
+  static String _worldLabel(int w) {
+    switch (w) {
+      case 1:
+        return 'Dart';
+      case 2:
+        return 'Flutter';
+      case 3:
+        return 'Firebase';
+      default:
+        return 'Mundo $w';
+    }
+  }
+
+  static int _firstGlobalIndexForWorld(int world) =>
+      allPhases.firstWhere((e) => e.world == world).globalIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +67,13 @@ class TelaHome extends StatelessWidget {
                 subtitle: 'Widgets, layout e navegação',
                 completedPhases: done,
               ),
+              const SizedBox(height: 16),
+              _WorldSection(
+                world: 3,
+                title: 'Mundo 3 — Firebase',
+                subtitle: 'Backend, dados e integração no app',
+                completedPhases: done,
+              ),
             ],
           ),
         );
@@ -74,6 +95,8 @@ class _HeaderProgress extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = ProgressService.instance.progress;
     final total = allPhases.length;
+    final fasesNoMundoAtual =
+        allPhases.where((e) => e.world == p.currentWorld).length;
     return Card(
       color: const Color(0xFF1E2430),
       child: Padding(
@@ -88,7 +111,7 @@ class _HeaderProgress extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Nível ${p.playerLevel} · Mundo atual: ${worldLabel(p.currentWorld)} · '
-              '${completedPhases >= total ? "Jornada completa" : "Próxima: fase ${p.nextPhaseInWorld ?? "-"} de 10"}',
+              '${completedPhases >= total ? "Jornada completa" : "Próxima: fase ${p.nextPhaseInWorld ?? "-"} de $fasesNoMundoAtual"}',
               style: TextStyle(color: Colors.blueGrey.shade200, fontSize: 14),
             ),
             const SizedBox(height: 12),
@@ -126,12 +149,16 @@ class _WorldSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final phases = allPhases.where((e) => e.world == world).toList()
       ..sort((a, b) => a.indexInWorld.compareTo(b.indexInWorld));
+    final startW2 = TelaHome._firstGlobalIndexForWorld(2);
+    final startW3 = TelaHome._firstGlobalIndexForWorld(3);
 
     return Card(
       color: const Color(0xFF1E1E1E),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: ExpansionTile(
-        initiallyExpanded: world == 1 || (world == 2 && completedPhases >= 10),
+        initiallyExpanded: world == 1 ||
+            (world == 2 && completedPhases >= startW2) ||
+            (world == 3 && completedPhases >= startW3),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(subtitle, style: const TextStyle(fontSize: 13)),
         children: [
